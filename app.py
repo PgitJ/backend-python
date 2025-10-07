@@ -10,8 +10,12 @@ from auth import auth_bp # Importa o Blueprint de autenticação
 
 # 1. Configuração
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*", "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"], "allow_headers": ["Content-Type", "Authorization"]}})
-
+CORS(app, resources={r"/*": {
+    "origins": "*",  # Aceita todas as origens (incluindo o Ngrok)
+    "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    "allow_headers": ["Content-Type", "Authorization"],
+    "supports_credentials": True  # Permite envio de cookies, se usados (boa prática)
+}})
 bcrypt = Bcrypt(app) 
 
 # Certifique-se de que a pasta 'data' existe
@@ -198,5 +202,3 @@ def delete_bill(id):
     return jsonify({'error': 'Conta não encontrada'}), 404
 
 
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
