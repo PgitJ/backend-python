@@ -1,4 +1,5 @@
 Flask
+Flask-CORS
 python-dotenv
 PyJWT
 Flask-Bcrypt
