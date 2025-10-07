@@ -83,7 +83,7 @@ def authenticate_token(f):
         except jwt.InvalidTokenError:
             return jsonify({'error': 'Token inválido.'}), 403
 
-        return f(*args, **kwargs, **kwargs)
+        return f(*args, **kwargs)
     return decorated
 
 # Monta o Blueprint de Autenticação
@@ -164,9 +164,9 @@ def add_transaction():
 @authenticate_token
 def update_transaction(id):
     updated = update_transaction(id, request.get_json(), request.user_id)
-    if updated:
-        return jsonify(updated)
-    return jsonify({'error': 'Transação não encontrada'}), 404
+    # if updated:
+    #     return jsonify(updated)
+    return jsonify(updated) if updated else jsonify({'error': 'Transação não encontrada'}), 404
 
 @app.route('/api/transactions/<id>', methods=['DELETE'])
 @authenticate_token
