@@ -162,16 +162,22 @@ def add_transaction():
 
 @app.route('/api/transactions/<id>', methods=['PUT'])
 @authenticate_token
-def update_transaction(id):
-    updated = update_transaction(id, request.get_json(), request.user_id)
+def update_transaction(**kwargs):
+    item_id = kwargs.get('id')
+    if not item_id:
+        return jsonify({'error': 'ID da meta é obrigatório.'}), 400
+    updated = update_transaction(item_id, request.get_json(), request.user_id)
     # if updated:
     #     return jsonify(updated)
     return jsonify(updated) if updated else jsonify({'error': 'Transação não encontrada'}), 404
 
 @app.route('/api/transactions/<id>', methods=['DELETE'])
 @authenticate_token
-def delete_transaction(id):
-    if delete(FILE_MAP['transactions'], id, request.user_id):
+def delete_transaction(**kwargs):
+    item_id = kwargs.get('id')
+    if not item_id:
+        return jsonify({'error': 'ID da meta é obrigatório.'}), 400
+    if delete(FILE_MAP['transactions'], item_id, request.user_id):
         return jsonify({'message': 'Transação deletada com sucesso'}), 200
     return jsonify({'error': 'Transação não encontrada'}), 404
 
@@ -190,16 +196,22 @@ def add_goal():
 
 @app.route('/api/goals/<id>', methods=['PUT'])
 @authenticate_token
-def update_goal(id):
-    updated = update_goal(id, request.get_json(), request.user_id)
+def update_goal(**kwargs):
+    item_id = kwargs.get('id')
+    if not item_id:
+        return jsonify({'error': 'ID da meta é obrigatório.'}), 400
+    updated = update_goal(item_id, request.get_json(), request.user_id)
     if updated:
         return jsonify(updated)
     return jsonify({'error': 'Meta não encontrada'}), 404
 
 @app.route('/api/goals/<id>', methods=['DELETE'])
 @authenticate_token
-def delete_goal(id):
-    if delete(FILE_MAP['goals'], id, request.user_id):
+def delete_goal(**kwargs):
+    item_id = kwargs.get('id')
+    if not item_id:
+        return jsonify({'error': 'ID da meta é obrigatório.'}), 400
+    if delete(FILE_MAP['goals'], item_id, request.user_id):
         return jsonify({'message': 'Meta deletada com sucesso'}), 200
     return jsonify({'error': 'Meta não encontrada'}), 404
 
@@ -218,16 +230,22 @@ def add_bill():
 
 @app.route('/api/bills/<id>', methods=['PUT'])
 @authenticate_token
-def update_bill(id):
-    updated = update_bill(id, request.get_json(), request.user_id)
+def update_bill(**kwargs):
+    item_id = kwargs.get('id')
+    if not item_id:
+        return jsonify({'error': 'ID da meta é obrigatório.'}), 400
+    updated = update_bill(item_id, request.get_json(), request.user_id)
     if updated:
         return jsonify(updated)
     return jsonify({'error': 'Conta não encontrada'}), 404
 
 @app.route('/api/bills/<id>', methods=['DELETE'])
 @authenticate_token
-def delete_bill(id):
-    if delete(FILE_MAP['bills'], id, request.user_id):
+def delete_bill(**kwargs):
+    item_id = kwargs.get('id')
+    if not item_id:
+        return jsonify({'error': 'ID da meta é obrigatório.'}), 400
+    if delete(FILE_MAP['bills'], item_id, request.user_id):
         return jsonify({'message': 'Conta deletada com sucesso'}), 200
     return jsonify({'error': 'Conta não encontrada'}), 404
 
