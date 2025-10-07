@@ -5,7 +5,26 @@ import jwt
 import uuid
 import os
 from functools import wraps
-from data_manager import find_all, create, update, delete, find_user_by_username
+# app.py
+
+from data_manager import (
+    find_user_by_username, # Usado no auth.py (e importado implicitamente)
+
+    # Funções de Leitura (Gerais)
+    find_all, 
+    
+    # Funções CRUD para Transações
+    create_transaction, update_transaction, delete,
+    
+    # Funções CRUD para Metas
+    create_goal, update_goal, delete_goal, 
+    
+    # Funções CRUD para Contas
+    create_bill, update_bill, delete_bill,
+    
+    # Funções CRUD para Categorias
+    find_all_categories, create_category, delete_category
+)
 from auth import auth_bp # Importa o Blueprint de autenticação
 from db import initialize_db, query as db_query
 # 1. Configuração

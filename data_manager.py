@@ -2,6 +2,7 @@
 
 import uuid
 from db import query
+from psycopg2 import sql
 
 # Funções auxiliares de Autenticação (Users)
 
