@@ -43,8 +43,17 @@ def query(text, params=None, fetch_all=True):
             return data
         else:
             # Para INSERT, UPDATE, DELETE e CREATE
-            conn.commit()
-            return None 
+            if cur.description is not None:
+                # Se houver descrição, há linhas retornadas (do RETURNING *)
+                result = cur.fetchall()
+                col_names = [desc[0] for desc in cur.description]
+                data = [dict(zip(col_names, row)) for row in result]
+                conn.commit()
+                # Retorna o primeiro item inserido/atualizado
+                return data 
+            else:
+                conn.commit()
+                return None
             
     except Exception as e:
         if conn:
