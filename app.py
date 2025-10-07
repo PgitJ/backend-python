@@ -9,19 +9,14 @@ from functools import wraps
 
 from data_manager import (
     find_user_by_username, # Usado no auth.py (e importado implicitamente)
-
     # Funções de Leitura (Gerais)
     find_all, 
-    
     # Funções CRUD para Transações
     create_transaction, update_transaction, delete,
-    
     # Funções CRUD para Metas
     create_goal, update_goal, 
-    
     # Funções CRUD para Contas
     create_bill, update_bill,
-    
     # Funções CRUD para Categorias
     find_all_categories, create_category, delete_category
 )
@@ -108,11 +103,15 @@ def get_categories():
     # Garante que sempre haja categorias padrão se nenhuma existir
     if not categories_data:
         # Cria categorias padrão para o usuário se não existirem
-        default_cats = [{'name': 'Alimentação', 'user_id': user_id, 'id': str(uuid.uuid4())},
-                        {'name': 'Transporte', 'user_id': user_id, 'id': str(uuid.uuid4())}]
+        default_cats = [
+            {'name': 'Alimentação'}, 
+            {'name': 'Transporte'}
+        ]
+        
         for cat in default_cats:
-            create(FILE_MAP['categories'], cat, user_id)
-        categories_data = default_cats
+            create_category(cat['name'], user_id) 
+        
+        categories_data = find_all_categories(user_id)
         
     return jsonify(categories_data), 200
 
@@ -129,7 +128,7 @@ def add_category():
     if any(c['name'] == name for c in existing_cats):
         return jsonify({'error': 'Categoria já existe.'}), 409
         
-    new_cat = create(FILE_MAP['categories'], {'name': name}, request.user_id)
+    new_cat = create_category(FILE_MAP['categories'], {'name': name}, request.user_id)
     return jsonify(new_cat), 201
 
 @app.route('/api/categories/<name>', methods=['DELETE'])
@@ -158,13 +157,13 @@ def get_transactions():
 @app.route('/api/transactions', methods=['POST'])
 @authenticate_token
 def add_transaction():
-    new_transaction = create(FILE_MAP['transactions'], request.get_json(), request.user_id)
+    new_transaction = create_transaction(FILE_MAP['transactions'], request.get_json(), request.user_id)
     return jsonify(new_transaction), 201
 
 @app.route('/api/transactions/<id>', methods=['PUT'])
 @authenticate_token
 def update_transaction(id):
-    updated = update(FILE_MAP['transactions'], id, request.get_json(), request.user_id)
+    updated = update_transaction(FILE_MAP['transactions'], id, request.get_json(), request.user_id)
     if updated:
         return jsonify(updated)
     return jsonify({'error': 'Transação não encontrada'}), 404
@@ -186,13 +185,13 @@ def get_goals():
 @app.route('/api/goals', methods=['POST'])
 @authenticate_token
 def add_goal():
-    new_goal = create(FILE_MAP['goals'], request.get_json(), request.user_id)
+    new_goal = create_goal(FILE_MAP['goals'], request.get_json(), request.user_id)
     return jsonify(new_goal), 201
 
 @app.route('/api/goals/<id>', methods=['PUT'])
 @authenticate_token
 def update_goal(id):
-    updated = update(FILE_MAP['goals'], id, request.get_json(), request.user_id)
+    updated = update_goal(FILE_MAP['goals'], id, request.get_json(), request.user_id)
     if updated:
         return jsonify(updated)
     return jsonify({'error': 'Meta não encontrada'}), 404
@@ -214,13 +213,13 @@ def get_bills():
 @app.route('/api/bills', methods=['POST'])
 @authenticate_token
 def add_bill():
-    new_bill = create(FILE_MAP['bills'], request.get_json(), request.user_id)
+    new_bill = create_bill(FILE_MAP['bills'], request.get_json(), request.user_id)
     return jsonify(new_bill), 201
 
 @app.route('/api/bills/<id>', methods=['PUT'])
 @authenticate_token
 def update_bill(id):
-    updated = update(FILE_MAP['bills'], id, request.get_json(), request.user_id)
+    updated = update_bill(FILE_MAP['bills'], id, request.get_json(), request.user_id)
     if updated:
         return jsonify(updated)
     return jsonify({'error': 'Conta não encontrada'}), 404
