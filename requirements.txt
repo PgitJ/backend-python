@@ -4,3 +4,4 @@ python-dotenv
 PyJWT
 Flask-Bcrypt
 uuid
+gunicorn
