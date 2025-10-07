@@ -17,10 +17,10 @@ from data_manager import (
     create_transaction, update_transaction, delete,
     
     # Funções CRUD para Metas
-    create_goal, update_goal, delete_goal, 
+    create_goal, update_goal, 
     
     # Funções CRUD para Contas
-    create_bill, update_bill, delete_bill,
+    create_bill, update_bill,
     
     # Funções CRUD para Categorias
     find_all_categories, create_category, delete_category
