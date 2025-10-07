@@ -3,8 +3,7 @@
 import os
 import psycopg2
 from urllib.parse import urlparse
-from psycopg2 import sql 
-from psycopg2 import Composed
+from psycopg2.sql import Composed # <--- CORREÇÃO!
 
 # Render deve ter a DATABASE_URL configurada
 DATABASE_URL = os.environ.get('DATABASE_URL')
