@@ -3,7 +3,8 @@
 import os
 import psycopg2
 from urllib.parse import urlparse
-from psycopg2 import sql
+from psycopg2 import sql 
+from psycopg2 import Composed
 
 # Render deve ter a DATABASE_URL configurada
 DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -26,10 +27,17 @@ def query(text, params=None, fetch_all=True):
     try:
         conn = get_connection()
         cur = conn.cursor()
+        
+        if isinstance(text, Composed):
+            # Obtém a string final da consulta formatada
+            check_text = text.as_string(conn) 
+        else:
+            check_text = text
+        
         cur.execute(text, params)
         
         # Se for um SELECT, busca os resultados e converte para JSON-friendly
-        if text.strip().upper().startswith('SELECT') and fetch_all:
+        if check_text.strip().upper().startswith('SELECT') and fetch_all:
             result = cur.fetchall()
             col_names = [desc[0] for desc in cur.description]
             data = [dict(zip(col_names, row)) for row in result]
