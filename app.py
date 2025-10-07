@@ -59,10 +59,10 @@ app.config['SECRET_KEY'] = SECRET_KEY
 
 # Mapeamento para o data_manager
 FILE_MAP = {
-    'transactions': 'transactions.json',
-    'goals': 'goals.json',
-    'bills': 'bills.json',
-    'categories': 'categories.json'
+    'transactions': 'transactions',
+    'goals': 'goals',
+    'bills': 'bills',
+    'categories': 'categories'
 }
 
 # 2. Middleware de Autenticação (Decorator)
