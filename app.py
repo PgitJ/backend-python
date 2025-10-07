@@ -7,8 +7,20 @@ import os
 from functools import wraps
 from data_manager import find_all, create, update, delete, find_user_by_username
 from auth import auth_bp # Importa o Blueprint de autenticação
-
+from db import initialize_db, query as db_query
 # 1. Configuração
+DB_INITIALIZED = False
+
+# Chamada de Inicialização
+if not DB_INITIALIZED:
+    try:
+        initialize_db()
+        DB_INITIALIZED = True
+    except Exception as e:
+        # Se a inicialização falhar (ex: credenciais erradas), o app trava.
+        print("FALHA CRÍTICA AO INICIALIZAR O BANCO DE DADOS!")
+        # Em produção (Render), você pode querer que o app trave aqui.
+        raise e 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {
     "origins": "*",  # Aceita todas as origens (incluindo o Ngrok)

@@ -1,106 +1,126 @@
-import json
-import os
-from uuid import uuid4
+# data_manager.py - Implementação SQL
 
-DATA_DIR = 'data/'
+import uuid
+from db import query
 
-def _load_data(filename):
-    """Carrega dados de um arquivo JSON. Cria um arquivo vazio se não existir."""
-    filepath = os.path.join(DATA_DIR, filename)
-    if not os.path.exists(DATA_DIR):
-        os.makedirs(DATA_DIR)
-    if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
-        # Garante que o arquivo exista e não esteja vazio
-        with open(filepath, 'w') as f:
-            json.dump([], f)
-        return []
-    
-    with open(filepath, 'r') as f:
-        try:
-            return json.load(f)
-        except json.JSONDecodeError:
-            # Retorna lista vazia em caso de JSON inválido
-            return []
+# Funções auxiliares de Autenticação (Users)
 
-def _save_data(filename, data):
-    """Salva dados em um arquivo JSON."""
-    filepath = os.path.join(DATA_DIR, filename)
-    with open(filepath, 'w') as f:
-        json.dump(data, f, indent=4)
-
-def find_all(filename, user_id):
-    """Retorna todos os registros para um dado usuário."""
-    data = _load_data(filename)
-    # Filtra os dados apenas para o usuário atual (simulando WHERE user_id = $1)
-    return [item for item in data if str(item.get('user_id')) == str(user_id)]
-
-def find_by_id(filename, item_id, user_id):
-    """Retorna um registro pelo ID para um dado usuário."""
-    data = _load_data(filename)
-    for item in data:
-        if str(item.get('id')) == str(item_id) and str(item.get('user_id')) == str(user_id):
-            return item
-    return None
-
-def create(filename, new_item, user_id):
-    """Cria um novo registro com ID e user_id."""
-    data = _load_data(filename)
-    new_item['id'] = str(uuid4()) # Gera um UUID único para o ID
-    new_item['user_id'] = str(user_id)
-    
-    # Garantindo consistência de tipo para 'amount' se for usado
-    if 'amount' in new_item:
-        try:
-            new_item['amount'] = float(new_item['amount'])
-        except (TypeError, ValueError):
-            pass # Mantém o valor original se não puder converter
-            
-    data.append(new_item)
-    _save_data(filename, data)
-    return new_item
-
-def update(filename, item_id, updated_item, user_id):
-    """Atualiza um registro existente."""
-    data = _load_data(filename)
-    for i, item in enumerate(data):
-        if str(item.get('id')) == str(item_id) and str(item.get('user_id')) == str(user_id):
-            # Atualiza apenas os campos permitidos
-            updated_data = {**item, **updated_item}
-            
-            # Garante que ID e user_id não sejam alterados
-            updated_data['id'] = item_id
-            updated_data['user_id'] = user_id
-            
-            data[i] = updated_data
-            _save_data(filename, data)
-            return updated_data
-    return None
-
-def delete(filename, item_id, user_id):
-    """Deleta um registro existente."""
-    data = _load_data(filename)
-    original_len = len(data)
-    
-    # Filtra a lista, removendo o item que corresponde ao ID e user_id
-    new_data = [item for item in data if not (str(item.get('id')) == str(item_id) and str(item.get('user_id')) == str(user_id))]
-
-    if len(new_data) < original_len:
-        _save_data(filename, new_data)
-        return True
-    return False
-
-# Funções auxiliares para Autenticação (usuários)
 def find_user_by_username(username):
-    data = _load_data('users.json')
-    return next((user for user in data if user.get('username') == username), None)
+    sql_text = "SELECT id, username, password_hash FROM users WHERE username = %s"
+    results = query(sql_text, (username,))
+    return results[0] if results else None
 
 def create_user(username, password_hash):
-    data = _load_data('users.json')
-    new_user = {
-        'id': str(uuid4()),
-        'username': username,
-        'password_hash': password_hash
-    }
-    data.append(new_user)
-    _save_data('users.json', data)
-    return new_user
+    new_id = str(uuid.uuid4())
+    sql_text = "INSERT INTO users (id, username, password_hash) VALUES (%s, %s, %s) RETURNING id, username"
+    query(sql_text, (new_id, username, password_hash), fetch_all=False)
+    return {'id': new_id, 'username': username}
+
+# --- Funções CRUD Genéricas para a Aplicação ---
+
+# Função para encontrar um item (usada para Transaction, Goal, Bill, Category)
+def find_all(table_name, user_id, order_by='id'):
+    sql_text = sql.SQL("SELECT * FROM {} WHERE user_id = %s ORDER BY {}").format(
+        sql.Identifier(table_name), sql.Identifier(order_by)
+    )
+    return query(sql_text, (user_id,))
+
+def find_by_id(table_name, item_id, user_id):
+    sql_text = sql.SQL("SELECT * FROM {} WHERE id = %s AND user_id = %s").format(
+        sql.Identifier(table_name)
+    )
+    results = query(sql_text, (item_id, user_id))
+    return results[0] if results else None
+
+def delete(table_name, item_id, user_id):
+    sql_text = sql.SQL("DELETE FROM {} WHERE id = %s AND user_id = %s RETURNING id").format(
+        sql.Identifier(table_name)
+    )
+    results = query(sql_text, (item_id, user_id))
+    return len(results) > 0 # Retorna True se algo foi deletado
+
+# --- Implementação CRUD Específica ---
+
+# Transações
+def create_transaction(item, user_id):
+    new_id = str(uuid.uuid4())
+    sql_text = """
+    INSERT INTO transactions (id, user_id, date, description, category, type, amount) 
+    VALUES (%s, %s, %s, %s, %s, %s, %s) 
+    RETURNING *
+    """
+    params = (new_id, user_id, item['date'], item['description'], item['category'], item['type'], item['amount'])
+    return query(sql_text, params)[0]
+
+def update_transaction(item_id, item, user_id):
+    sql_text = """
+    UPDATE transactions 
+    SET date = %s, description = %s, category = %s, type = %s, amount = %s 
+    WHERE id = %s AND user_id = %s 
+    RETURNING *
+    """
+    params = (item['date'], item['description'], item['category'], item['type'], item['amount'], item_id, user_id)
+    results = query(sql_text, params)
+    return results[0] if results else None
+
+# Metas
+def create_goal(item, user_id):
+    new_id = str(uuid.uuid4())
+    sql_text = """
+    INSERT INTO goals (id, user_id, name, amount, saved, target_date) 
+    VALUES (%s, %s, %s, %s, %s, %s) 
+    RETURNING *
+    """
+    params = (new_id, user_id, item['name'], item['amount'], item.get('saved', 0), item['target_date'])
+    return query(sql_text, params)[0]
+
+def update_goal(item_id, item, user_id):
+    sql_text = """
+    UPDATE goals 
+    SET name = %s, amount = %s, saved = %s, target_date = %s 
+    WHERE id = %s AND user_id = %s 
+    RETURNING *
+    """
+    params = (item['name'], item['amount'], item['saved'], item['target_date'], item_id, user_id)
+    results = query(sql_text, params)
+    return results[0] if results else None
+
+# Contas (Bills)
+def create_bill(item, user_id):
+    new_id = str(uuid.uuid4())
+    sql_text = """
+    INSERT INTO bills (id, user_id, description, amount, due_date, paid) 
+    VALUES (%s, %s, %s, %s, %s, %s) 
+    RETURNING *
+    """
+    params = (new_id, user_id, item['description'], item['amount'], item['due_date'], item.get('paid', False))
+    return query(sql_text, params)[0]
+
+def update_bill(item_id, item, user_id):
+    # Usado para marcar como pago
+    sql_text = """
+    UPDATE bills 
+    SET description = %s, amount = %s, due_date = %s, paid = %s 
+    WHERE id = %s AND user_id = %s 
+    RETURNING *
+    """
+    params = (item['description'], item['amount'], item['due_date'], item['paid'], item_id, user_id)
+    results = query(sql_text, params)
+    return results[0] if results else None
+
+# Categorias (Simples)
+def find_all_categories(user_id):
+    return find_all('categories', user_id, order_by='name')
+
+def create_category(name, user_id):
+    new_id = str(uuid.uuid4())
+    sql_text = "INSERT INTO categories (id, user_id, name) VALUES (%s, %s, %s) RETURNING *"
+    return query(sql_text, (new_id, user_id, name))[0]
+
+def delete_category(category_name, user_id):
+    # Encontra o ID primeiro, pois o DELETE do frontend usa o NOME
+    # Isso requer lógica manual para mapear nome para ID no data_manager
+    # Assumindo que você tem um ID para a categoria:
+    sql_text = "DELETE FROM categories WHERE name = %s AND user_id = %s RETURNING id"
+    results = query(sql_text, (category_name, user_id))
+    return len(results) > 0

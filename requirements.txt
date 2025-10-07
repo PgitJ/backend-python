@@ -5,3 +5,4 @@ PyJWT
 Flask-Bcrypt
 uuid
 gunicorn
+psycopg2-binary
