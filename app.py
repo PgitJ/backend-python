@@ -12,11 +12,11 @@ from data_manager import (
     # Funções de Leitura (Gerais)
     find_all, 
     # Funções CRUD para Transações
-    create_transaction, update_transaction, delete,
+    create_transaction, update_transaction as dm_update_transaction, delete,
     # Funções CRUD para Metas
-    create_goal, update_goal, 
+    create_goal, update_goal as dm_update_goal, 
     # Funções CRUD para Contas
-    create_bill, update_bill,
+    create_bill, update_bill as dm_update_bill,
     # Funções CRUD para Categorias
     find_all_categories, create_category, delete_category
 )
@@ -166,7 +166,7 @@ def update_transaction(**kwargs):
     item_id = kwargs.get('id')
     if not item_id:
         return jsonify({'error': 'ID da meta é obrigatório.'}), 400
-    updated = update_transaction(item_id, request.get_json(), request.user_id)
+    updated = dm_update_transaction(item_id, request.get_json(), request.user_id)
     # if updated:
     #     return jsonify(updated)
     return jsonify(updated) if updated else jsonify({'error': 'Transação não encontrada'}), 404
@@ -200,7 +200,7 @@ def update_goal(**kwargs):
     item_id = kwargs.get('id')
     if not item_id:
         return jsonify({'error': 'ID da meta é obrigatório.'}), 400
-    updated = update_goal(item_id, request.get_json(), request.user_id)
+    updated = dm_update_goal(item_id, request.get_json(), request.user_id)
     if updated:
         return jsonify(updated)
     return jsonify({'error': 'Meta não encontrada'}), 404
@@ -234,7 +234,7 @@ def update_bill(**kwargs):
     item_id = kwargs.get('id')
     if not item_id:
         return jsonify({'error': 'ID da meta é obrigatório.'}), 400
-    updated = update_bill(item_id, request.get_json(), request.user_id)
+    updated = dm_update_bill(item_id, request.get_json(), request.user_id)
     if updated:
         return jsonify(updated)
     return jsonify({'error': 'Conta não encontrada'}), 404
