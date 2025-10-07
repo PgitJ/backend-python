@@ -76,13 +76,15 @@ def create_goal(item, user_id):
     return query(sql_text, params)[0]
 
 def update_goal(item_id, item, user_id):
+    target_date_clean = item['target_date'].split('T')[0] if 'T' in item['target_date'] else item['target_date']
+    
     sql_text = """
     UPDATE goals 
     SET name = %s, amount = %s, saved = %s, target_date = %s 
     WHERE id = %s AND user_id = %s 
     RETURNING *
     """
-    params = (item['name'], item['amount'], item['saved'], item['target_date'], item_id, user_id)
+    params = (item['name'], item['amount'], item['saved'], target_date_clean, item_id, user_id)
     results = query(sql_text, params)
     return results[0] if results else None
 
