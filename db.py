@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 from psycopg2 import sql
 
 # Render deve ter a DATABASE_URL configurada
-DATABASE_URL = 'postgres://avnadmin:AVNS_V4Z3ZVHqjnAtFb0n2sF@pg-2c1e95e3-pietrojordan1310-50c6.d.aivencloud.com:18780/defaultdb?sslmode=require'
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
 def get_connection():
     if not DATABASE_URL:
