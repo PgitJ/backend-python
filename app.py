@@ -128,7 +128,7 @@ def add_category():
     if any(c['name'] == name for c in existing_cats):
         return jsonify({'error': 'Categoria já existe.'}), 409
         
-    new_cat = create_category(FILE_MAP['categories'], {'name': name}, request.user_id)
+    new_cat = create_category(name, request.user_id)
     return jsonify(new_cat), 201
 
 @app.route('/api/categories/<name>', methods=['DELETE'])
@@ -157,13 +157,13 @@ def get_transactions():
 @app.route('/api/transactions', methods=['POST'])
 @authenticate_token
 def add_transaction():
-    new_transaction = create_transaction(FILE_MAP['transactions'], request.get_json(), request.user_id)
+    new_transaction = create_transaction(request.get_json(), request.user_id)
     return jsonify(new_transaction), 201
 
 @app.route('/api/transactions/<id>', methods=['PUT'])
 @authenticate_token
 def update_transaction(id):
-    updated = update_transaction(FILE_MAP['transactions'], id, request.get_json(), request.user_id)
+    updated = update_transaction(id, request.get_json(), request.user_id)
     if updated:
         return jsonify(updated)
     return jsonify({'error': 'Transação não encontrada'}), 404
@@ -185,13 +185,13 @@ def get_goals():
 @app.route('/api/goals', methods=['POST'])
 @authenticate_token
 def add_goal():
-    new_goal = create_goal(FILE_MAP['goals'], request.get_json(), request.user_id)
+    new_goal = create_goal(request.get_json(), request.user_id)
     return jsonify(new_goal), 201
 
 @app.route('/api/goals/<id>', methods=['PUT'])
 @authenticate_token
 def update_goal(id):
-    updated = update_goal(FILE_MAP['goals'], id, request.get_json(), request.user_id)
+    updated = update_goal(id, request.get_json(), request.user_id)
     if updated:
         return jsonify(updated)
     return jsonify({'error': 'Meta não encontrada'}), 404
@@ -213,13 +213,13 @@ def get_bills():
 @app.route('/api/bills', methods=['POST'])
 @authenticate_token
 def add_bill():
-    new_bill = create_bill(FILE_MAP['bills'], request.get_json(), request.user_id)
+    new_bill = create_bill(request.get_json(), request.user_id)
     return jsonify(new_bill), 201
 
 @app.route('/api/bills/<id>', methods=['PUT'])
 @authenticate_token
 def update_bill(id):
-    updated = update_bill(FILE_MAP['bills'], id, request.get_json(), request.user_id)
+    updated = update_bill(id, request.get_json(), request.user_id)
     if updated:
         return jsonify(updated)
     return jsonify({'error': 'Conta não encontrada'}), 404
